@@ -1,1 +1,8 @@
 Bacteria/
+logs/
+saved_model_output/
+config/__pycache__/__init__.cpython-38.pyc
+config/__pycache__/config.cpython-38.pyc
+models/__pycache__/__init__.cpython-38.pyc
+models/__pycache__/base_model.cpython-38.pyc
+utils/__pycache__/config.cpython-38.pyc
