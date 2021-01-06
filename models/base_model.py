@@ -9,7 +9,8 @@ Created on Tue Jan  5 18:20:05 2021
 
 # Imports
 import datetime
-
+import numpy as np
+import matplotlib.pyplot as plt
 import tensorflow as tf
 from tensorflow.keras.layers import Dropout, Flatten, Dense
 from tensorflow.keras.models import Model
@@ -39,10 +40,11 @@ class classifierModel():
         self.num_classes = self.config.model.num_classes
         self.validation_split = self.config.train.val_split
         self.init_lr = self.config.model.init_lr
+        
         self.preprocess = None
         self.callbacks = None
         self.model = None
-    
+        self.model_history = None
      
     def create_generators(self):
         """ Create Keras train and validate data generators """
@@ -151,7 +153,8 @@ class classifierModel():
                                        validation_steps = validation_generator.samples // self.batch_size,
                                        epochs = self.num_epochs,
                                        callbacks = self.callbacks)
-                                  
+        
+        self.model_history = model_history                  
         return model_history
 
 
@@ -160,5 +163,30 @@ class classifierModel():
         return
     
   
-    
-    
+    def plot_acc_loss(self):
+     # Plot training/validation accuracy and loss\n",
+     
+      plt.style.use("ggplot")
+      plt.figure()
+      plt.plot(np.arange(0, self.num_epochs), self.model_history.history["loss"], label="train_loss")
+      plt.plot(np.arange(0, self.num_epochs), self.model_history.history["val_loss"], label="val_loss")
+      plt.title("Training Loss")
+      plt.xlabel("Epoch #")
+      plt.ylabel("Loss"),
+      plt.legend(loc = "upper right")
+      
+      plt.figure()
+      plt.plot(np.arange(0, self.num_epochs), self.model_history.history["accuracy"], label="train_acc")
+      plt.plot(np.arange(0, self.num_epochs), self.model_history.history["val_accuracy"], label="val_acc")
+      plt.title("Training Accuracy")
+      plt.xlabel("Epoch #")
+      plt.ylabel("Accuracy")
+      plt.legend(loc = "lower left")
+  
+    def save_classifier(self,path):
+        self.model.save(path)
+        return
+        
+        
+        
+        

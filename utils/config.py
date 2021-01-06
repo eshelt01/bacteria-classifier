@@ -2,7 +2,7 @@
 """
 Created on Wed Jan  6 00:14:00 2021
 
-@author: Erin S
+Reference: https://github.com/The-AI-Summer/Deep-Learning-In-Production
 """
 
 """Config class"""
