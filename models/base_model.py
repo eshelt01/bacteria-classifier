@@ -23,15 +23,15 @@ from tensorflow.keras.applications.inception_v3 import preprocess_input as incep
 from utils.config import Config
 
 
-
 class classifierModel():
-    """Base Model class for CNN classifier models"""
+    """ Class for CNN image classifiers. Valid models include VGG, Resnet and Inception"""
     def __init__(self, cfg, baseModel, model_name):
         
         self.baseModel = baseModel
         self.model_name = model_name
         self.config = Config.from_json(cfg)
-        self.image_path = self.config.data.path
+        self.image_path = self.config.data.train_path
+        self.test_path = self.config.data.test_path
         self.image_size = self.config.data.image_size
         self.batch_size = self.config.train.batch_size
         self.num_epochs = self.config.train.epochs
@@ -47,7 +47,7 @@ class classifierModel():
         self.model_history = None
      
     def create_generators(self):
-        """ Create Keras train and validate data generators """
+        """ Create Keras train and validate data generators with data augmentation"""
         
         train_datagen = ImageDataGenerator(
                         horizontal_flip = True,
@@ -70,7 +70,24 @@ class classifierModel():
                                subset ='validation')    # set as validation data)
      
         return train_datagen, train_generator, validation_generator
+     
+    
+    def create_test_generators(self):
+        """ Create Keras test data generators """
         
+        test_datagen = ImageDataGenerator(                 
+                        preprocessing_function = self.preprocess) 
+
+
+        test_generator = test_datagen.flow_from_directory(
+                        self.test_path,
+                        target_size=(self.image_size,self.image_size),
+                        batch_size= self.batch_size,
+                        class_mode='categorical',  
+                        shuffle=False)  # keep data in same order as labels
+        
+        return test_generator
+    
    
     def build(self):
         """ Build head model for training classifier. Two fully connected layers and two dropout layers are included """
@@ -87,7 +104,6 @@ class classifierModel():
         headModel = Dropout(self.dropout)(headModel)
         headModel = Dense(self.num_classes, activation="softmax")(headModel)
         self.model = Model(inputs = self.baseModel.input, outputs = headModel)
-        
         return
 
     def set_callbacks(self):
@@ -97,7 +113,7 @@ class classifierModel():
         self.callbacks = tf.keras.callbacks.TensorBoard(log_dir = log_dir, histogram_freq = 1)
         return 
     
-    
+    # Preprocessing functions for each model
     def normalize_VGG(self):
         self.preprocess = vgg_preprocess
         return
@@ -155,35 +171,40 @@ class classifierModel():
                                        callbacks = self.callbacks)
         
         self.model_history = model_history                  
+        
         return model_history
 
 
-    def predict(self):
-        """ TODO """
-        return
+    def evaluate_classifier(self):
+        """ Evaluate classifier on test data """
+        
+        test_generator = self.create_test_generators()
+        output = self.model.evaluate(test_generator, steps=74//32 +1, workers = 0)
+        
+        return output
     
   
     def plot_acc_loss(self):
-     # Plot training/validation accuracy and loss\n",
-     
-      plt.style.use("ggplot")
-      plt.figure()
-      plt.plot(np.arange(0, self.num_epochs), self.model_history.history["loss"], label="train_loss")
-      plt.plot(np.arange(0, self.num_epochs), self.model_history.history["val_loss"], label="val_loss")
-      plt.title("Training Loss")
-      plt.xlabel("Epoch #")
-      plt.ylabel("Loss"),
-      plt.legend(loc = "upper right")
+     """ Plot training/validation accuracy and loss """
+     plt.style.use("ggplot")
+     plt.figure()
+     plt.plot(np.arange(0, self.num_epochs), self.model_history.history["loss"], label="train_loss")
+     plt.plot(np.arange(0, self.num_epochs), self.model_history.history["val_loss"], label="val_loss")
+     plt.title("Training Loss")
+     plt.xlabel("Epoch #")
+     plt.ylabel("Loss"),
+     plt.legend(loc = "upper right")
       
-      plt.figure()
-      plt.plot(np.arange(0, self.num_epochs), self.model_history.history["accuracy"], label="train_acc")
-      plt.plot(np.arange(0, self.num_epochs), self.model_history.history["val_accuracy"], label="val_acc")
-      plt.title("Training Accuracy")
-      plt.xlabel("Epoch #")
-      plt.ylabel("Accuracy")
-      plt.legend(loc = "lower left")
+     plt.figure()
+     plt.plot(np.arange(0, self.num_epochs), self.model_history.history["accuracy"], label="train_acc")
+     plt.plot(np.arange(0, self.num_epochs), self.model_history.history["val_accuracy"], label="val_acc")
+     plt.title("Training Accuracy")
+     plt.xlabel("Epoch #")
+     plt.ylabel("Accuracy")
+     plt.legend(loc = "lower left")
   
-    def save_classifier(self,path):
+    def save_classifier(self, path):
+        """ Save model """
         self.model.save(path)
         return
         
