@@ -23,8 +23,8 @@ CFG = {
     },
     "model": {
         "input_tensor": [224, 224, 3],
-        "dense_layer": 256,
-        "dropout": 0.2,
+        "dense_layer": 512,
+        "dropout": 0.5,
         "num_classes": 33,
         "init_lr": 1e-3
         }
@@ -48,7 +48,7 @@ CFG_RESNET = {
     },
     "model": {
         "input_tensor": [224, 224, 3],
-        "dense_layer": 256,
+        "dense_layer": 512,
         "dropout": 0.2,
         "num_classes": 33,
         "init_lr": 1e-3
