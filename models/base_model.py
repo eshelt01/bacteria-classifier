@@ -16,7 +16,8 @@ from tensorflow.keras.layers import Dropout, Flatten, Dense
 from tensorflow.keras.models import Model
 from tensorflow.keras.optimizers import Adam
 from keras_preprocessing.image import ImageDataGenerator
-from tensorflow.keras.applications.vgg16 import preprocess_input as vgg_preprocess
+from tensorflow.keras.applications.vgg16 import preprocess_input as vgg16_preprocess
+from tensorflow.keras.applications.vgg19 import preprocess_input as vgg19_preprocess
 from tensorflow.keras.applications.resnet50 import preprocess_input as resnet_preprocess
 from tensorflow.keras.applications.inception_v3 import preprocess_input as inception_preprocess
 
@@ -114,8 +115,12 @@ class classifierModel():
         return 
     
     # Preprocessing functions for each model
-    def normalize_VGG(self):
-        self.preprocess = vgg_preprocess
+    def normalize_VGG16(self):
+        self.preprocess = vgg16_preprocess
+        return
+    
+    def normalize_VGG19(self):
+        self.preprocess = vgg19_preprocess
         return
     
     def normalize_ResNet(self):
@@ -129,8 +134,11 @@ class classifierModel():
     def normalize(self):
         """Set data preprocessing function specific to model name """
         
-        if 'vgg' in self.model_name:
-            self.normalize_VGG()
+        if 'vgg16' in self.model_name:
+            self.normalize_VGG16()
+         
+        elif 'vgg19' in self.model_name:
+            self.normalize_VGG19()
             
         elif 'resnet' in self.model_name:
             self.normalize_ResNet()
@@ -179,7 +187,7 @@ class classifierModel():
         """ Evaluate classifier on test data """
         
         test_generator = self.create_test_generators()
-        output = self.model.evaluate(test_generator, steps=74//32 +1, workers = 0)
+        output = self.model.evaluate(test_generator, steps=33//32 +1, workers = 0)
         
         return output
     
